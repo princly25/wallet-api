@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<WalletDbContext>(options =>
 {
     var pgConnection = builder.Configuration.GetConnectionString("PostgresConnection")
-        ?? "Host=localhost;Port=5432;Database=simplewallet;Username=postgres;Password=postgres";
+        ?? throw new InvalidOperationException("PostgresConnection must be configured.");
     options.UseNpgsql(pgConnection);
 });
 
@@ -27,6 +27,10 @@ builder.Services.AddScoped<IUserService, UserService>();
 var jwtIssuer = builder.Configuration["Jwt:Issuer"];
 var jwtAudience = builder.Configuration["Jwt:Audience"];
 var jwtKey = builder.Configuration["Jwt:Key"];
+// Never start with a missing or weak JWT signing key. Set Jwt__Key via secrets
+// or environment variables outside Development.
+if (string.IsNullOrWhiteSpace(jwtKey) || Encoding.UTF8.GetByteCount(jwtKey) < 32)
+    throw new InvalidOperationException("Jwt:Key must be configured with at least 32 UTF-8 bytes.");
 
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -87,8 +91,13 @@ app.UseMiddleware<ExceptionMiddleware>();
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<WalletDbContext>();
-    dbContext.Database.EnsureCreated();
-    WalletDbSeeder.Seed(dbContext);
+    // Demo accounts and balances belong only in local development.
+    // Production initialization/migrations will be addressed separately.
+    if (app.Environment.IsDevelopment())
+    {
+        dbContext.Database.EnsureCreated();
+        WalletDbSeeder.Seed(dbContext);
+    }
 }
 
 // swagger ui
