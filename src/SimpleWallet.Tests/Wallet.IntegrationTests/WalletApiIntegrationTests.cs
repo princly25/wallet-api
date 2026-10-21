@@ -144,7 +144,11 @@ public class WalletApiIntegrationTests
         Assert.Equal(HttpStatusCode.NoContent, patchResponse.StatusCode);
 
         // act
-        var getResponse = await _client.GetAsync($"{_baseUrl}/api/User/{userId}");
+        // The user endpoint is now private; include the admin token received above.
+        using var getRequest = new HttpRequestMessage(HttpMethod.Get, $"{_baseUrl}/api/User/{userId}");
+        getRequest.Headers.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+        var getResponse = await _client.SendAsync(getRequest);
 
         // assert
         Assert.Equal(HttpStatusCode.OK, getResponse.StatusCode);
