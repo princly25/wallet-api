@@ -1,9 +1,13 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using SimpleWallet.Application.Interfaces;
 using SimpleWallet.Api.DTOs;
 
 namespace SimpleWallet.Api.Controllers;
 
+// Until user identities are mapped to wallet ownership, monetary operations
+// are restricted to administrators rather than exposed to any authenticated user.
+[Authorize(Roles = "Admin")]
 [ApiController]
 [Route("api/[controller]")]
 public class TransactionController : ControllerBase

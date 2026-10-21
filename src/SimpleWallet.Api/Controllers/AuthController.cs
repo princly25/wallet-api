@@ -15,15 +15,22 @@ namespace SimpleWallet.Api.Controllers;
 public class AuthenticationController : ControllerBase
 {
     private readonly IConfiguration _configuration;
+    private readonly IWebHostEnvironment _environment;
 
-    public AuthenticationController(IConfiguration configuration)
+    public AuthenticationController(IConfiguration configuration, IWebHostEnvironment environment)
     {
         _configuration = configuration;
+        _environment = environment;
     }
 
     [HttpPost("login")]
     public IActionResult Login([FromBody] LoginRequest request)
     {
+        // Demo credentials must never authenticate users in production.
+        // Real users and their wallet ownership will be implemented separately.
+        if (!_environment.IsDevelopment())
+            return NotFound();
+
         // kommer bytas mot DB lookup fÃ¶r userdata sen
         var users = new Dictionary<string, (string Password, string Role)>
         {

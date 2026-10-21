@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace SimpleWallet.Api.Controllers;
 
+// Personal details are not public; owner-based access will follow in a later PR.
+[Authorize(Roles = "Admin")]
 [ApiController]
 [Route("api/[controller]")]
 public class UserController : ControllerBase

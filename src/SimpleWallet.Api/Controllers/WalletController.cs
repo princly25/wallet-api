@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace SimpleWallet.Api.Controllers;
 
+// Temporary fail-closed policy until per-user wallet ownership authorization exists.
+[Authorize(Roles = "Admin")]
 [ApiController]
 [Route("api/[controller]")]
 public class WalletController : ControllerBase
